@@ -31,7 +31,7 @@ const PostEditor: React.FC = () => {
     }
   };
 
-  const handleAudioGenerated = (url: string, metadata: any) => {
+  const handleAudioGenerated = (url: string) => {
     setAudioUrl(url);
   };
 
