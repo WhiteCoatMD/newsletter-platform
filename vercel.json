@@ -9,7 +9,7 @@
       }
     },
     {
-      "src": "backend/package.json",
+      "src": "backend/src/index.ts",
       "use": "@vercel/node"
     }
   ],
@@ -20,10 +20,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/dist/$1"
+      "dest": "/frontend/dist/index.html"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
