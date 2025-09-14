@@ -1,17 +1,8 @@
 {
-  "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/dist",
-  "functions": {
-    "backend/src/index.ts": {
-      "runtime": "@vercel/node"
-    }
-  },
+  "installCommand": "npm install && cd frontend && npm install",
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/backend/src/index.ts"
-    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
