@@ -37,6 +37,15 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Newsletter Platform API',
+    status: 'running',
+    endpoints: ['/health', '/api/auth', '/api/newsletters', '/api/posts', '/api/ai'],
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.use('*', (req, res) => {
   res.status(404).json({ success: false, message: 'API route not found' });
 });
