@@ -1,12 +1,12 @@
 const express = require('express');
-const { protect } = require('../middleware/auth');
+// const { protect } = require('../middleware/auth');
 
 const router = express.Router();
 
 // @desc    Get user newsletters
 // @route   GET /api/newsletters
 // @access  Private
-router.get('/', protect, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     res.json({
       success: true,
