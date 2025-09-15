@@ -1,12 +1,13 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Analytics from '../components/Dashboard/Analytics';
+import { API_BASE_URL } from '../config';
 
 const AnalyticsPage: React.FC = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ['analytics', 'dashboard'],
     queryFn: async () => {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/test/dashboard`, {
+      const response = await fetch(`${API_BASE_URL}/api/test/dashboard`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
