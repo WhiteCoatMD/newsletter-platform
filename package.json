@@ -18,6 +18,9 @@
   "keywords": ["newsletter", "email", "marketing", "analytics"],
   "author": "",
   "license": "MIT",
+  "dependencies": {
+    "openai": "^4.20.1"
+  },
   "devDependencies": {
     "concurrently": "^8.2.2"
   }
