@@ -1,8 +1,15 @@
-const express = require('express');
-const SimplifiedAIService = require('../services/simplifiedAIService').default;
-const { protect } = require('../middleware/auth');
+import express from 'express';
+import SimplifiedAIService from '../services/simplifiedAIService';
+import { protect } from '../middleware/auth';
 
-const aiService = new SimplifiedAIService();
+let aiService: SimplifiedAIService;
+
+function getAIService() {
+  if (!aiService) {
+    aiService = new SimplifiedAIService();
+  }
+  return aiService;
+}
 
 const router = express.Router();
 
@@ -20,7 +27,7 @@ router.post('/generate-content', protect, async (req, res) => {
       });
     }
 
-    const result = await aiService.generateContent(prompt, options);
+    const result = await getAIService().generateContent(prompt, options);
 
     if (!result.success) {
       return res.status(500).json({
@@ -38,7 +45,7 @@ router.post('/generate-content', protect, async (req, res) => {
     console.error('Generate content error:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -57,7 +64,7 @@ router.post('/generate-subjects', protect, async (req, res) => {
       });
     }
 
-    const result = await aiService.generateSubjectLines(content, options.count || 5);
+    const result = await getAIService().generateSubjectLines(content, options.count || 5);
 
     if (!result.success) {
       return res.status(500).json({
@@ -75,7 +82,7 @@ router.post('/generate-subjects', protect, async (req, res) => {
     console.error('Generate subjects error:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -94,7 +101,7 @@ router.post('/improve-content', protect, async (req, res) => {
       });
     }
 
-    const result = await aiService.improveContent(content, improvementType);
+    const result = await getAIService().improveContent(content, improvementType);
 
     if (!result.success) {
       return res.status(500).json({
@@ -112,7 +119,7 @@ router.post('/improve-content', protect, async (req, res) => {
     console.error('Improve content error:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -131,7 +138,7 @@ router.post('/generate-outline', protect, async (req, res) => {
       });
     }
 
-    const result = await aiService.generateOutline(topic, options);
+    const result = await getAIService().generateOutline(topic, options);
 
     if (!result.success) {
       return res.status(500).json({
@@ -149,7 +156,7 @@ router.post('/generate-outline', protect, async (req, res) => {
     console.error('Generate outline error:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -168,7 +175,7 @@ router.post('/generate-section', protect, async (req, res) => {
       });
     }
 
-    const result = await aiService.generateSectionContent(sectionTitle, points, contentType);
+    const result = await getAIService().generateSectionContent(sectionTitle, points, contentType);
 
     if (!result.success) {
       return res.status(500).json({
@@ -186,7 +193,7 @@ router.post('/generate-section', protect, async (req, res) => {
     console.error('Generate section error:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -205,7 +212,7 @@ router.post('/analyze-content', protect, async (req, res) => {
       });
     }
 
-    const result = await aiService.analyzeContent(content);
+    const result = await getAIService().analyzeContent(content);
 
     if (!result.success) {
       return res.status(500).json({
@@ -223,7 +230,7 @@ router.post('/analyze-content', protect, async (req, res) => {
     console.error('Analyze content error:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -242,7 +249,7 @@ router.post('/improve-multipass', protect, async (req, res) => {
       });
     }
 
-    const result = await aiService.improveContent(content, options);
+    const result = await getAIService().improveContent(content, options);
 
     if (!result.success) {
       return res.status(500).json({
@@ -260,7 +267,7 @@ router.post('/improve-multipass', protect, async (req, res) => {
     console.error('Multi-pass improvement error:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -279,7 +286,7 @@ router.post('/personalize', protect, async (req, res) => {
       });
     }
 
-    const result = await aiService.generatePersonalizedContent(content, subscriberProfiles);
+    const result = await getAIService().generatePersonalizedContent(content, subscriberProfiles);
 
     if (!result.success) {
       return res.status(500).json({
@@ -297,7 +304,7 @@ router.post('/personalize', protect, async (req, res) => {
     console.error('Personalization error:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -316,7 +323,7 @@ router.post('/create-audio', protect, async (req, res) => {
       });
     }
 
-    const result = await aiService.createAudioNewsletter(content, options);
+    const result = await getAIService().createAudioNewsletter(content, options);
 
     if (!result.success) {
       return res.status(500).json({
@@ -331,9 +338,9 @@ router.post('/create-audio', protect, async (req, res) => {
       success: true,
       data: {
         audioUrl: '/api/ai/audio/' + Date.now() + '.mp3', // Placeholder URL
-        duration: result.data.duration,
-        voice: result.data.voice,
-        wordCount: result.data.wordCount
+        duration: result.data?.duration || 0,
+        voice: result.data?.voice || 'alloy',
+        wordCount: result.data?.wordCount || 0
       }
     });
 
@@ -341,7 +348,7 @@ router.post('/create-audio', protect, async (req, res) => {
     console.error('Audio creation error:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -362,12 +369,12 @@ router.post('/transcribe', protect, async (req, res) => {
 
     // In a real implementation, you'd handle file upload properly
     const audioBuffer = Buffer.from(audioFile, 'base64');
-    const result = await aiService.transcribeToNewsletter(audioBuffer, 'mp3', options);
+    const result = await getAIService().transcribeToNewsletter(audioBuffer, 'mp3', options);
 
-    if (!result.success) {
+    if (!result.success || !result.data) {
       return res.status(500).json({
         success: false,
-        message: result.error
+        message: 'success' in result && !result.success && 'error' in result ? result.error : 'Transcription failed'
       });
     }
 
@@ -380,7 +387,7 @@ router.post('/transcribe', protect, async (req, res) => {
     console.error('Transcription error:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -399,7 +406,7 @@ router.post('/seo-package', protect, async (req, res) => {
       });
     }
 
-    const result = await aiService.generateSEOPackage(content, keywords, options);
+    const result = await getAIService().generateSEOPackage(content, keywords, options);
 
     if (!result.success) {
       return res.status(500).json({
@@ -417,7 +424,7 @@ router.post('/seo-package', protect, async (req, res) => {
     console.error('SEO package error:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -427,7 +434,7 @@ router.post('/seo-package', protect, async (req, res) => {
 // @access  Private
 router.get('/health', protect, async (req, res) => {
   try {
-    const health = aiService.getSystemHealth();
+    const health = getAIService().getSystemHealth();
 
     res.json({
       success: true,
@@ -438,9 +445,9 @@ router.get('/health', protect, async (req, res) => {
     console.error('AI health check error:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
 
-module.exports = router;
+export default router;

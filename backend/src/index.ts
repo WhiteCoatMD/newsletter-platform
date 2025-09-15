@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import compression from 'compression';
 import dotenv from 'dotenv';
 import connectDB from './config/database';
+import aiRoutes from './routes/ai';
+import testRoutes from './routes/test';
 
 dotenv.config();
 
@@ -14,8 +16,19 @@ connectDB();
 
 app.use(helmet());
 app.use(compression());
+const origins: string[] = [
+  'http://localhost:3000',
+  'https://frontend-19fgofw00-mitch-brattons-projects.vercel.app',
+  'https://frontend-tan-alpha-36.vercel.app',
+  'https://frontend-bvty3ezp4-mitch-brattons-projects.vercel.app'
+];
+
+if (process.env.CORS_ORIGIN) {
+  origins.push(process.env.CORS_ORIGIN);
+}
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: origins,
   credentials: true
 }));
 
@@ -28,9 +41,9 @@ app.use('/api/posts', require('./routes/posts'));
 app.use('/api/subscribers', require('./routes/subscribers'));
 app.use('/api/templates', require('./routes/templates'));
 app.use('/api/segments', require('./routes/segments'));
-app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/test', testRoutes);
 app.use('/api/payments', require('./routes/payments'));
-app.use('/api/ai', require('./routes/ai'));
+app.use('/api/ai', aiRoutes);
 app.use('/api/upload', require('./routes/upload'));
 
 app.get('/health', (req, res) => {

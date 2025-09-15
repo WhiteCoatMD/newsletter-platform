@@ -25,7 +25,12 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(cmd //c:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(timeout:*)",
+      "Bash(npm outdated)",
+      "Bash(npm view:*)",
+      "Bash(vercel:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

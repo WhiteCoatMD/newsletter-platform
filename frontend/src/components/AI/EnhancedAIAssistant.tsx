@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { API_BASE_URL } from '../../config';
 import {
   SparklesIcon,
   ArrowPathIcon,
@@ -69,7 +70,7 @@ const EnhancedAIAssistant: React.FC<EnhancedAIAssistantProps> = ({
 
     setIsProcessing(true);
     try {
-      const response = await fetch('/api/ai/generate-content', {
+      const response = await fetch(`${API_BASE_URL}/api/ai/generate-content`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +89,16 @@ const EnhancedAIAssistant: React.FC<EnhancedAIAssistantProps> = ({
         })
       });
 
-      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        throw new Error('Invalid JSON response from server');
+      }
 
       if (result.success) {
         onContentGenerated?.(result.data);
@@ -122,7 +132,7 @@ const EnhancedAIAssistant: React.FC<EnhancedAIAssistantProps> = ({
 
     setIsProcessing(true);
     try {
-      const response = await fetch('/api/ai/improve-multipass', {
+      const response = await fetch(`${API_BASE_URL}/api/ai/improve-multipass`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -138,7 +148,16 @@ const EnhancedAIAssistant: React.FC<EnhancedAIAssistantProps> = ({
         })
       });
 
-      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        throw new Error('Invalid JSON response from server');
+      }
 
       if (result.success) {
         onContentGenerated?.(result.data.finalContent);
@@ -171,7 +190,7 @@ const EnhancedAIAssistant: React.FC<EnhancedAIAssistantProps> = ({
 
     setIsProcessing(true);
     try {
-      const response = await fetch('/api/ai/create-audio', {
+      const response = await fetch(`${API_BASE_URL}/api/ai/create-audio`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -183,7 +202,16 @@ const EnhancedAIAssistant: React.FC<EnhancedAIAssistantProps> = ({
         })
       });
 
-      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        throw new Error('Invalid JSON response from server');
+      }
 
       if (result.success) {
         onAudioGenerated?.(result.data.audioUrl, {
@@ -216,7 +244,7 @@ const EnhancedAIAssistant: React.FC<EnhancedAIAssistantProps> = ({
     try {
       const keywords = seoForm.keywords.split(',').map(k => k.trim()).filter(k => k);
 
-      const response = await fetch('/api/ai/seo-package', {
+      const response = await fetch(`${API_BASE_URL}/api/ai/seo-package`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -232,7 +260,16 @@ const EnhancedAIAssistant: React.FC<EnhancedAIAssistantProps> = ({
         })
       });
 
-      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        throw new Error('Invalid JSON response from server');
+      }
 
       if (result.success) {
         // Show SEO data in a modal or update UI
@@ -259,14 +296,23 @@ const EnhancedAIAssistant: React.FC<EnhancedAIAssistantProps> = ({
 
   const checkSystemHealth = useCallback(async () => {
     try {
-      const response = await fetch('/api/ai/health', {
+      const response = await fetch(`${API_BASE_URL}/api/ai/health`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
 
-      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        throw new Error('Invalid JSON response from server');
+      }
 
       if (result.success) {
         setSystemHealth(result.data);
