@@ -7,7 +7,7 @@ const Dashboard: React.FC = () => {
   const { data: analyticsData, isLoading } = useQuery({
     queryKey: ['analytics', 'dashboard'],
     queryFn: async () => {
-      const response = await fetch('/api/analytics/dashboard', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/test/dashboard`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

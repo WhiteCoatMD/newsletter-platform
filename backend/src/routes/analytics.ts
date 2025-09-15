@@ -35,13 +35,11 @@ router.get('/test', async (req, res) => {
 
 // @desc    Get dashboard analytics
 // @route   GET /api/analytics/dashboard
-// @access  Private
+// @access  Public (for demo)
 router.get('/dashboard', async (req, res) => {
   try {
-    // const userId = req.user._id;
-
-    // Get user's newsletters
-    const newsletters = await Newsletter.find({ userId });
+    // For demo purposes, return sample data
+    const newsletters = await Newsletter.find({}).limit(10);
     const newsletterIds = newsletters.map(n => n._id);
 
     // Get total subscribers across all newsletters
