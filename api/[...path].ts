@@ -79,4 +79,14 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   });
 });
 
-export default app;
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  return new Promise((resolve, reject) => {
+    app(req as any, res as any, (err: any) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(undefined);
+      }
+    });
+  });
+}
