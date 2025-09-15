@@ -4,8 +4,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import dotenv from 'dotenv';
-import connectDB from '../backend/src/config/database';
-import testRoutes from '../backend/src/routes/test';
+const connectDB = require('../backend/src/config/database').default;
+const testRoutes = require('../backend/src/routes/test');
 
 dotenv.config();
 
