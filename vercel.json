@@ -3,19 +3,27 @@
   "outputDirectory": "frontend/dist",
   "installCommand": "npm install && cd frontend && npm install && cd ../backend && npm install",
   "framework": null,
-  "functions": {
-    "backend/src/index.ts": {
-      "runtime": "@vercel/node@20.x"
-    }
-  },
-  "rewrites": [
+  "builds": [
     {
-      "source": "/api/(.*)",
-      "destination": "/backend/src/index.ts"
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "backend/src/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/backend/src/index.ts"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/dist/$1"
     }
   ]
 }
