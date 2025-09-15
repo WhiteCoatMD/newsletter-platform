@@ -21,7 +21,8 @@ const origins: string[] = [
   'https://frontend-19fgofw00-mitch-brattons-projects.vercel.app',
   'https://frontend-tan-alpha-36.vercel.app',
   'https://frontend-bvty3ezp4-mitch-brattons-projects.vercel.app',
-  'https://frontend-njcsj8h9d-mitch-brattons-projects.vercel.app'
+  'https://frontend-njcsj8h9d-mitch-brattons-projects.vercel.app',
+  'https://frontend-i7zve79xf-mitch-brattons-projects.vercel.app'
 ];
 
 if (process.env.CORS_ORIGIN) {
