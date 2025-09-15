@@ -23,8 +23,12 @@ const origins: string[] = [
   'https://frontend-bvty3ezp4-mitch-brattons-projects.vercel.app',
   'https://frontend-njcsj8h9d-mitch-brattons-projects.vercel.app',
   'https://frontend-i7zve79xf-mitch-brattons-projects.vercel.app',
+  'https://frontend-3eg43rxfx-mitch-brattons-projects.vercel.app',
+  'https://frontend-eqhz3czfx-mitch-brattons-projects.vercel.app',
   'https://newsbuildr.com',
-  'https://www.newsbuildr.com'
+  'https://www.newsbuildr.com',
+  'http://newsbuildr.com',
+  'http://www.newsbuildr.com'
 ];
 
 if (process.env.CORS_ORIGIN) {
@@ -33,7 +37,9 @@ if (process.env.CORS_ORIGIN) {
 
 app.use(cors({
   origin: origins,
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json({ limit: '10mb' }));

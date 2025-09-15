@@ -1,10 +1,12 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import Analytics from '../components/Dashboard/Analytics';
 import { PlusIcon, PaperAirplaneIcon, UsersIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import { API_BASE_URL } from '../config';
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { data: analyticsData, isLoading } = useQuery({
     queryKey: ['analytics', 'dashboard'],
     queryFn: async () => {
@@ -54,7 +56,10 @@ const Dashboard: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
             <p className="text-gray-600 mt-2">Welcome back! Here's your newsletter performance.</p>
           </div>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center space-x-2">
+          <button
+            onClick={() => navigate('/posts/new')}
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center space-x-2"
+          >
             <PlusIcon className="w-4 h-4" />
             <span>New Post</span>
           </button>
