@@ -185,39 +185,93 @@ async function getReports(req: VercelRequest, res: VercelResponse) {
     .skip((Number(page) - 1) * Number(limit))
     .lean();
 
+  console.log(`Found ${reports.length} reports with filters:`, filters);
+
   // Get target details for each report
   const enrichedReports = await Promise.all(
     reports.map(async (report) => {
       let target = null;
 
       if (report.targetType === 'post') {
-        const post = await CommunityPost.findById(report.targetId).populate('authorId', 'firstName lastName email').lean();
-        if (post) {
+        try {
+          const post = await CommunityPost.findById(report.targetId).populate('authorId', 'firstName lastName email').lean();
+          if (post) {
+            target = {
+              type: 'post',
+              id: post._id.toString(),
+              title: post.title,
+              author: `${post.authorId.firstName || ''} ${post.authorId.lastName || ''}`.trim() || post.authorId.email
+            };
+          } else {
+            // Fallback: Create a placeholder target if the actual post doesn't exist
+            target = {
+              type: 'post',
+              id: report.targetId.toString(),
+              title: '[Post Not Found]',
+              author: 'Unknown'
+            };
+          }
+        } catch (error) {
+          console.warn('Error fetching post for report:', error);
           target = {
             type: 'post',
-            id: post._id.toString(),
-            title: post.title,
-            author: `${post.authorId.firstName || ''} ${post.authorId.lastName || ''}`.trim() || post.authorId.email
+            id: report.targetId.toString(),
+            title: '[Post Error]',
+            author: 'Unknown'
           };
         }
       } else if (report.targetType === 'reply') {
-        const reply = await CommunityReply.findById(report.targetId).populate('authorId', 'firstName lastName email').populate('postId', 'title').lean();
-        if (reply) {
+        try {
+          const reply = await CommunityReply.findById(report.targetId).populate('authorId', 'firstName lastName email').populate('postId', 'title').lean();
+          if (reply) {
+            target = {
+              type: 'reply',
+              id: reply._id.toString(),
+              title: `Reply to: ${reply.postId.title}`,
+              author: `${reply.authorId.firstName || ''} ${reply.authorId.lastName || ''}`.trim() || reply.authorId.email
+            };
+          } else {
+            target = {
+              type: 'reply',
+              id: report.targetId.toString(),
+              title: '[Reply Not Found]',
+              author: 'Unknown'
+            };
+          }
+        } catch (error) {
+          console.warn('Error fetching reply for report:', error);
           target = {
             type: 'reply',
-            id: reply._id.toString(),
-            title: `Reply to: ${reply.postId.title}`,
-            author: `${reply.authorId.firstName || ''} ${reply.authorId.lastName || ''}`.trim() || reply.authorId.email
+            id: report.targetId.toString(),
+            title: '[Reply Error]',
+            author: 'Unknown'
           };
         }
       } else if (report.targetType === 'user') {
-        const user = await User.findById(report.targetId).lean();
-        if (user) {
+        try {
+          const user = await User.findById(report.targetId).lean();
+          if (user) {
+            target = {
+              type: 'user',
+              id: user._id.toString(),
+              title: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+              author: user.email
+            };
+          } else {
+            target = {
+              type: 'user',
+              id: report.targetId.toString(),
+              title: '[User Not Found]',
+              author: 'Unknown'
+            };
+          }
+        } catch (error) {
+          console.warn('Error fetching user for report:', error);
           target = {
             type: 'user',
-            id: user._id.toString(),
-            title: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
-            author: user.email
+            id: report.targetId.toString(),
+            title: '[User Error]',
+            author: 'Unknown'
           };
         }
       }
