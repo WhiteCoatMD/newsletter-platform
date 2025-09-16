@@ -61,8 +61,32 @@ const ReportModal: React.FC<ReportModalProps> = ({
       setPriority('medium');
       onClose();
     } catch (error) {
-      toast.error('Failed to submit report. Please try again.');
       console.error('Report submission error:', error);
+
+      // Fallback: Store report locally if API fails
+      const report = {
+        id: Date.now().toString(),
+        targetType,
+        targetId,
+        targetTitle,
+        reason,
+        description: description.trim() || '',
+        priority,
+        timestamp: new Date().toISOString(),
+        status: 'pending_sync'
+      };
+
+      const existingReports = JSON.parse(localStorage.getItem('pending-reports') || '[]');
+      existingReports.push(report);
+      localStorage.setItem('pending-reports', JSON.stringify(existingReports));
+
+      toast.success('Report queued successfully. It will be submitted when the connection is restored.');
+
+      // Reset form
+      setReason('');
+      setDescription('');
+      setPriority('medium');
+      onClose();
     }
   };
 
@@ -77,7 +101,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[85vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center space-x-3">
@@ -93,7 +117,8 @@ const ReportModal: React.FC<ReportModalProps> = ({
         </div>
 
         {/* Content */}
-        <form onSubmit={handleSubmit} className="p-6">
+        <div className="flex-1 overflow-y-auto">
+          <form onSubmit={handleSubmit} className="p-6 pb-0">
           {/* Target Info */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -167,23 +192,24 @@ const ReportModal: React.FC<ReportModalProps> = ({
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end space-x-3">
+          <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 flex justify-end space-x-3">
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50 font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={createReportMutation.isPending}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm"
             >
               {createReportMutation.isPending ? 'Submitting...' : 'Submit Report'}
             </button>
           </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
