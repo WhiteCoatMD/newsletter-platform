@@ -82,19 +82,33 @@ let isConnected = false;
 async function connectToDatabase() {
   if (isConnected) return;
 
+  if (!process.env.MONGODB_URI) {
+    throw new Error('MONGODB_URI environment variable is not set');
+  }
+
   try {
-    await mongoose.connect(process.env.MONGODB_URI as string, {
+    await mongoose.connect(process.env.MONGODB_URI, {
       bufferCommands: false,
     });
     isConnected = true;
     console.log('Connected to MongoDB');
   } catch (error) {
     console.error('MongoDB connection error:', error);
-    throw error;
+    isConnected = false;
+    throw new Error(`Failed to connect to MongoDB: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Check if MongoDB URI is configured
+  if (!process.env.MONGODB_URI) {
+    return res.status(503).json({
+      success: false,
+      message: 'Database not configured',
+      error: 'MONGODB_URI environment variable is not set'
+    });
+  }
+
   try {
     await connectToDatabase();
 
@@ -125,9 +139,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   } catch (error) {
     console.error('Moderation API error:', error);
-    return res.status(500).json({
+
+    // Provide more specific error messages
+    let errorMessage = 'Internal server error';
+    let statusCode = 500;
+
+    if (error instanceof Error) {
+      if (error.message.includes('MONGODB_URI')) {
+        errorMessage = 'Database configuration error';
+        statusCode = 503;
+      } else if (error.message.includes('connect')) {
+        errorMessage = 'Database connection failed';
+        statusCode = 503;
+      } else {
+        errorMessage = error.message;
+      }
+    }
+
+    return res.status(statusCode).json({
       success: false,
-      message: error instanceof Error ? error.message : 'Internal server error'
+      message: errorMessage,
+      error: process.env.NODE_ENV === 'development' ? error instanceof Error ? error.stack : String(error) : undefined
     });
   }
 }

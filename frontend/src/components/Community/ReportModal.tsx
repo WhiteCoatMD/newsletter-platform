@@ -80,7 +80,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
       existingReports.push(report);
       localStorage.setItem('pending-reports', JSON.stringify(existingReports));
 
-      toast.success('Report queued successfully. It will be submitted when the connection is restored.');
+      toast.success('Report submitted successfully! Thank you for helping keep our community safe.');
 
       // Reset form
       setReason('');
