@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -14,6 +14,13 @@ const NewsletterEditor: React.FC<NewsletterEditorProps> = ({
   placeholder = 'Start writing your newsletter...'
 }) => {
   const [content, setContent] = useState(initialContent);
+
+  // Update content when initialContent changes (e.g., from AI generation)
+  useEffect(() => {
+    if (initialContent !== content) {
+      setContent(initialContent);
+    }
+  }, [initialContent]);
 
   const modules = {
     toolbar: {

@@ -7,7 +7,9 @@ import {
   UsersIcon,
   DocumentDuplicateIcon,
   CogIcon,
-  SparklesIcon
+  SparklesIcon,
+  EnvelopeIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 
 const Layout: React.FC = () => {
@@ -15,10 +17,12 @@ const Layout: React.FC = () => {
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: HomeIcon },
-    { name: 'Posts', href: '/posts/new', icon: PencilSquareIcon },
+    { name: 'Create', href: '/posts/new', icon: PencilSquareIcon },
+    { name: 'Newsletters', href: '/newsletters', icon: EnvelopeIcon },
     { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
     { name: 'Subscribers', href: '/subscribers', icon: UsersIcon },
     { name: 'Templates', href: '/templates', icon: DocumentDuplicateIcon },
+    { name: 'Community', href: '/community', icon: ChatBubbleLeftRightIcon },
     { name: 'Settings', href: '/settings', icon: CogIcon }
   ];
 
@@ -30,7 +34,7 @@ const Layout: React.FC = () => {
           <div className="flex items-center h-16 px-6 border-b border-gray-200">
             <div className="flex items-center space-x-2">
               <SparklesIcon className="w-8 h-8 text-blue-600" />
-              <h1 className="text-xl font-bold text-gray-900">Newsletter</h1>
+              <h1 className="text-xl font-bold text-gray-900">NewsBuildr</h1>
             </div>
           </div>
 

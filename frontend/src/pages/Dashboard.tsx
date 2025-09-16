@@ -1,7 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import Analytics from '../components/Dashboard/Analytics';
 import { PlusIcon, PaperAirplaneIcon, UsersIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import { API_BASE_URL } from '../config';
 
@@ -28,21 +27,19 @@ const Dashboard: React.FC = () => {
   const quickStats = analyticsData ? [
     {
       name: 'Total Subscribers',
-      value: analyticsData.overview?.totalSubscribers || 0,
+      value: analyticsData.subscribers || 0,
       icon: UsersIcon,
       color: 'bg-blue-500'
     },
     {
-      name: 'Published Posts',
-      value: analyticsData.overview?.publishedPosts || 0,
+      name: 'Emails Sent',
+      value: analyticsData.emailsSent || 0,
       icon: PaperAirplaneIcon,
       color: 'bg-green-500'
     },
     {
       name: 'Open Rate',
-      value: analyticsData.metrics?.emailsSent > 0
-        ? `${((analyticsData.metrics.totalUniqueOpens / analyticsData.metrics.emailsSent) * 100).toFixed(1)}%`
-        : '0%',
+      value: analyticsData.openRate ? `${analyticsData.openRate}%` : '0%',
       icon: ChartBarIcon,
       color: 'bg-purple-500'
     }
@@ -85,16 +82,38 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Analytics Component */}
+      {/* Recent Emails */}
       {isLoading ? (
         <div className="flex justify-center items-center min-h-64">
           <div className="loading-spinner"></div>
         </div>
-      ) : analyticsData ? (
-        <Analytics data={analyticsData} />
+      ) : analyticsData?.recentEmails ? (
+        <div className="bg-white rounded-lg shadow-sm border">
+          <div className="px-6 py-4 border-b">
+            <h2 className="text-lg font-medium text-gray-900">Recent Emails</h2>
+          </div>
+          <div className="divide-y">
+            {analyticsData.recentEmails.map((email: any) => (
+              <div key={email.id} className="px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-900">{email.subject}</h3>
+                    <p className="text-sm text-gray-500">
+                      Sent {new Date(email.sentAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex space-x-4 text-sm">
+                    <span className="text-green-600">{email.openRate}% opens</span>
+                    <span className="text-blue-600">{email.clickRate}% clicks</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       ) : (
         <div className="text-center py-8">
-          <p className="text-gray-500">No analytics data available yet</p>
+          <p className="text-gray-500">No recent emails available</p>
         </div>
       )}
     </div>

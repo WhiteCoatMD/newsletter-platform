@@ -1,12 +1,20 @@
 import OpenAI from 'openai';
 
 // Initialize OpenAI client
+const apiKey = process.env.OPENAI_API_KEY?.trim() || '';
 export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: apiKey,
 });
 
 export async function generateNewsletterContent(prompt: string, options: any = {}) {
   try {
+    // Check if API key is available
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OpenAI API key not found in environment variables');
+    }
+
+    console.log('Making OpenAI API call with prompt:', prompt.substring(0, 100) + '...');
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
@@ -43,9 +51,21 @@ export async function generateNewsletterContent(prompt: string, options: any = {
     };
   } catch (error) {
     console.error('OpenAI API error:', error);
+
+    let errorMessage = 'Connection error.';
+    if (error instanceof Error) {
+      if (error.message.includes('not a legal HTTP header value')) {
+        errorMessage = 'Invalid API key format. Please regenerate your OpenAI API key.';
+      } else if (error.message.includes('401')) {
+        errorMessage = 'Invalid OpenAI API key. Please check your API key.';
+      } else {
+        errorMessage = error.message;
+      }
+    }
+
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to generate content'
+      error: errorMessage
     };
   }
 }

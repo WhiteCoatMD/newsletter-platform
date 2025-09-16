@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { generateNewsletterContent } from '../../lib/openai';
+import { openai } from '../../lib/openai';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -21,26 +22,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Check if OpenAI API key is configured
     if (!process.env.OPENAI_API_KEY) {
-      // Fallback to mock response if no API key
-      const mockContent = {
-        title: "AI-Generated Newsletter Content",
-        content: `<h2>Weekly Tech Insights</h2>
-        <p>Based on your prompt: "${prompt}"</p>
-        <p>Here's some engaging newsletter content that would captivate your audience:</p>
-        <ul>
-          <li>Key industry trends and developments</li>
-          <li>Actionable insights for your readers</li>
-          <li>Expert opinions and analysis</li>
-        </ul>
-        <p>This content is optimized for engagement and designed to drive meaningful interactions with your subscribers.</p>
-        <p><em>Note: Configure OPENAI_API_KEY environment variable to use real AI generation.</em></p>`,
-        wordCount: 85,
-        estimatedReadTime: "2 minutes"
-      };
-
-      return res.status(200).json({
-        success: true,
-        data: mockContent
+      return res.status(500).json({
+        success: false,
+        message: 'OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.'
       });
     }
 
@@ -50,13 +34,48 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!result.success) {
       return res.status(500).json({
         success: false,
-        message: result.error
+        message: result.error || 'Failed to generate content'
       });
+    }
+
+    let heroImage = null;
+
+    // Generate hero image if requested
+    if (options.includeImages) {
+      try {
+        console.log('Generating hero image for content...');
+
+        const imagePrompt = `Create a professional, modern newsletter hero image about: ${prompt}. Clean visual design with abstract elements, geometric shapes, or relevant illustrations. NO TEXT, NO WORDS, NO LETTERS. Focus on colors, shapes, and visual metaphors only. Suitable for email header.`;
+
+        const imageResponse = await openai.images.generate({
+          model: "dall-e-3",
+          prompt: imagePrompt,
+          n: 1,
+          size: "1792x1024", // Wide format for newsletter header
+          style: "vivid",
+          quality: "standard"
+        });
+
+        if (imageResponse.data[0]?.url) {
+          heroImage = {
+            url: imageResponse.data[0].url,
+            prompt: imagePrompt,
+            size: "1792x1024"
+          };
+          console.log('Hero image generated successfully');
+        }
+      } catch (imageError) {
+        console.error('Image generation failed:', imageError);
+        // Continue without image - don't fail the whole request
+      }
     }
 
     res.status(200).json({
       success: true,
-      data: result.data
+      data: {
+        ...result.data,
+        heroImage
+      }
     });
 
   } catch (error) {

@@ -10,6 +10,13 @@ export interface IUser extends Document {
   plan: 'free' | 'pro' | 'enterprise';
   isEmailVerified: boolean;
   stripeCustomerId?: string;
+  // Community fields
+  role: 'admin' | 'moderator' | 'subscriber' | 'premium';
+  avatarUrl?: string;
+  bio?: string;
+  reputationScore: number;
+  isBanned: boolean;
+  bannedUntil?: Date;
   createdAt: Date;
   updatedAt: Date;
   matchPassword(enteredPassword: string): Promise<boolean>;
@@ -48,6 +55,30 @@ const userSchema = new Schema<IUser>({
   },
   stripeCustomerId: {
     type: String
+  },
+  // Community fields
+  role: {
+    type: String,
+    enum: ['admin', 'moderator', 'subscriber', 'premium'],
+    default: 'subscriber'
+  },
+  avatarUrl: {
+    type: String
+  },
+  bio: {
+    type: String,
+    maxlength: [500, 'Bio cannot exceed 500 characters']
+  },
+  reputationScore: {
+    type: Number,
+    default: 0
+  },
+  isBanned: {
+    type: Boolean,
+    default: false
+  },
+  bannedUntil: {
+    type: Date
   }
 }, {
   timestamps: true
