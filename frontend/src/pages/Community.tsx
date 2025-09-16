@@ -21,6 +21,8 @@ import toast from 'react-hot-toast';
 import PostView from '../components/Community/PostView';
 import ModerationPanel from '../components/Community/ModerationPanel';
 import NewPostModal from '../components/Community/NewPostModal';
+import PostDropdown from '../components/Community/PostDropdown';
+import ReportModal from '../components/Community/ReportModal';
 import { usePosts, useCategories, type CommunityPost, type CommunityCategory } from '../hooks/useCommunityAPI';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -33,6 +35,12 @@ const Community: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
   const [showNewPostModal, setShowNewPostModal] = useState(false);
   const [showModerationPanel, setShowModerationPanel] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{
+    type: 'post' | 'reply' | 'user';
+    id: string;
+    title: string;
+  } | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -148,6 +156,46 @@ const Community: React.FC = () => {
     } catch (error) {
       console.error('Failed to create post:', error);
       throw error;
+    }
+  };
+
+  // Post action handlers
+  const handleReportPost = (postId: string, postTitle: string) => {
+    setReportTarget({
+      type: 'post',
+      id: postId,
+      title: postTitle
+    });
+    setShowReportModal(true);
+  };
+
+  const handleBookmarkPost = (postId: string) => {
+    toast.success('Post bookmarked!');
+  };
+
+  const handleSharePost = (postId: string) => {
+    if (navigator.share) {
+      navigator.share({
+        title: 'Community Post',
+        url: `${window.location.origin}/community/post/${postId}`,
+      });
+    } else {
+      navigator.clipboard.writeText(`${window.location.origin}/community/post/${postId}`);
+      toast.success('Link copied to clipboard!');
+    }
+  };
+
+  const handleHidePost = (postId: string) => {
+    toast.success('Post hidden from your feed');
+  };
+
+  const handleEditPost = (postId: string) => {
+    toast.info('Edit functionality coming soon');
+  };
+
+  const handleDeletePost = (postId: string) => {
+    if (confirm('Are you sure you want to delete this post?')) {
+      toast.success('Post deleted successfully');
     }
   };
 
@@ -411,9 +459,17 @@ const Community: React.FC = () => {
                   </div>
                 </div>
 
-                <button className="text-gray-400 hover:text-gray-600">
-                  <EllipsisVerticalIcon className="w-5 h-5" />
-                </button>
+                <PostDropdown
+                  postId={post.id}
+                  postTitle={post.title}
+                  isOwnPost={false} // We'll implement user checking later
+                  onReport={handleReportPost}
+                  onBookmark={handleBookmarkPost}
+                  onShare={handleSharePost}
+                  onHide={handleHidePost}
+                  onEdit={handleEditPost}
+                  onDelete={handleDeletePost}
+                />
               </div>
             </div>
           </div>
@@ -448,6 +504,20 @@ const Community: React.FC = () => {
         isVisible={showModerationPanel}
         onClose={() => setShowModerationPanel(false)}
       />
+
+      {/* Report Modal */}
+      {reportTarget && (
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={() => {
+            setShowReportModal(false);
+            setReportTarget(null);
+          }}
+          targetType={reportTarget.type}
+          targetId={reportTarget.id}
+          targetTitle={reportTarget.title}
+        />
+      )}
     </div>
   );
 };

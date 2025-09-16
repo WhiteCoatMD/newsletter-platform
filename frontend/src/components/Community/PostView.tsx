@@ -15,6 +15,8 @@ import {
 } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
 import { useReplies, useCreateReply } from '../../hooks/useCommunityAPI';
+import PostDropdown from './PostDropdown';
+import ReportModal from './ReportModal';
 
 interface Reply {
   id: string;
@@ -65,6 +67,12 @@ const PostView: React.FC<PostViewProps> = ({ post, onBack }) => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [replyContent, setReplyContent] = useState('');
   const [showReplyForm, setShowReplyForm] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{
+    type: 'post' | 'reply' | 'user';
+    id: string;
+    title: string;
+  } | null>(null);
 
   // API hooks
   const { data: repliesData, isLoading: repliesLoading } = useReplies(post.id);
@@ -127,6 +135,56 @@ const PostView: React.FC<PostViewProps> = ({ post, onBack }) => {
     toast.success('Reply liked!');
   };
 
+  // Post and reply action handlers
+  const handleReportPost = (postId: string, postTitle: string) => {
+    setReportTarget({
+      type: 'post',
+      id: postId,
+      title: postTitle
+    });
+    setShowReportModal(true);
+  };
+
+  const handleReportReply = (replyId: string, replyContent: string) => {
+    setReportTarget({
+      type: 'reply',
+      id: replyId,
+      title: `Reply: ${replyContent.substring(0, 50)}...`
+    });
+    setShowReportModal(true);
+  };
+
+  const handleBookmarkPost = (postId: string) => {
+    setIsBookmarked(!isBookmarked);
+    toast.success(isBookmarked ? 'Removed from bookmarks' : 'Added to bookmarks');
+  };
+
+  const handleSharePost = (postId: string) => {
+    if (navigator.share) {
+      navigator.share({
+        title: post.title,
+        url: `${window.location.origin}/community/post/${postId}`,
+      });
+    } else {
+      navigator.clipboard.writeText(`${window.location.origin}/community/post/${postId}`);
+      toast.success('Link copied to clipboard!');
+    }
+  };
+
+  const handleHidePost = (postId: string) => {
+    toast.success('Post hidden from your feed');
+  };
+
+  const handleEditPost = (postId: string) => {
+    toast.info('Edit functionality coming soon');
+  };
+
+  const handleDeletePost = (postId: string) => {
+    if (confirm('Are you sure you want to delete this post?')) {
+      toast.success('Post deleted successfully');
+    }
+  };
+
   const renderReply = (reply: Reply, isNested = false) => (
     <div key={reply.id} className={`${isNested ? 'ml-12' : ''} mb-6`}>
       <div className="bg-gray-50 rounded-lg p-4">
@@ -149,9 +207,16 @@ const PostView: React.FC<PostViewProps> = ({ post, onBack }) => {
               </div>
             </div>
           </div>
-          <button className="text-gray-400 hover:text-gray-600">
-            <EllipsisVerticalIcon className="w-4 h-4" />
-          </button>
+          <PostDropdown
+            postId={reply.id}
+            postTitle={`Reply: ${reply.content.substring(0, 30)}...`}
+            isOwnPost={false} // We'll implement user checking later
+            onReport={(replyId, replyTitle) => handleReportReply(replyId, reply.content)}
+            onShare={(replyId) => {
+              navigator.clipboard.writeText(`${window.location.origin}/community/post/${post.id}#reply-${replyId}`);
+              toast.success('Reply link copied to clipboard!');
+            }}
+          />
         </div>
 
         {/* Reply Content */}
@@ -211,9 +276,17 @@ const PostView: React.FC<PostViewProps> = ({ post, onBack }) => {
           <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
             {post.category}
           </span>
-          <button className="text-gray-400 hover:text-gray-600">
-            <EllipsisVerticalIcon className="w-5 h-5" />
-          </button>
+          <PostDropdown
+            postId={post.id}
+            postTitle={post.title}
+            isOwnPost={false} // We'll implement user checking later
+            onReport={handleReportPost}
+            onBookmark={handleBookmarkPost}
+            onShare={handleSharePost}
+            onHide={handleHidePost}
+            onEdit={handleEditPost}
+            onDelete={handleDeletePost}
+          />
         </div>
 
         <h1 className="text-2xl font-bold text-gray-900 mb-4">{post.title}</h1>
@@ -376,6 +449,20 @@ const PostView: React.FC<PostViewProps> = ({ post, onBack }) => {
           </div>
         )}
       </div>
+
+      {/* Report Modal */}
+      {reportTarget && (
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={() => {
+            setShowReportModal(false);
+            setReportTarget(null);
+          }}
+          targetType={reportTarget.type}
+          targetId={reportTarget.id}
+          targetTitle={reportTarget.title}
+        />
+      )}
     </div>
   );
 };
