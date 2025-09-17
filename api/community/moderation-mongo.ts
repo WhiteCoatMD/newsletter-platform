@@ -99,9 +99,72 @@ async function connectToDatabase() {
   }
 }
 
+// Simple auth function for when MongoDB is not available
+function getUserFromToken(authHeader: string) {
+  if (!authHeader?.startsWith('Bearer ')) {
+    throw new Error('Invalid authorization header');
+  }
+
+  const token = authHeader.substring(7);
+
+  // For our admin user, use the known ID
+  if (token === '68ca06c9182ba9cdc01f135d') {
+    return {
+      id: '68ca06c9182ba9cdc01f135d',
+      email: 'mitch@whitecoat-md.com',
+      firstName: 'Mitch',
+      lastName: 'Bratton',
+      role: 'admin'
+    };
+  }
+
+  throw new Error('Invalid token');
+}
+
+function requireModerator(user: any) {
+  if (user.role !== 'admin' && user.role !== 'moderator') {
+    throw new Error('Moderator privileges required');
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Check if MongoDB URI is configured
   if (!process.env.MONGODB_URI) {
+    // Fallback: Return empty reports if database is not configured but user is authenticated
+    if (req.method === 'GET' && req.query.action === 'reports') {
+      try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+          return res.status(401).json({
+            success: false,
+            message: 'Authorization header required'
+          });
+        }
+
+        const user = getUserFromToken(authHeader);
+        requireModerator(user);
+
+        return res.status(200).json({
+          success: true,
+          data: {
+            reports: [], // Empty reports when database is not configured
+            pagination: {
+              page: 1,
+              limit: 20,
+              total: 0,
+              totalPages: 0
+            }
+          },
+          message: 'Database not fully configured. Please set MONGODB_URI environment variable.'
+        });
+      } catch (error) {
+        return res.status(401).json({
+          success: false,
+          message: error instanceof Error ? error.message : 'Authentication failed'
+        });
+      }
+    }
+
     return res.status(503).json({
       success: false,
       message: 'Database not configured',

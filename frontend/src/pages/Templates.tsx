@@ -34,6 +34,13 @@ const Templates: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
+  const [customTemplates, setCustomTemplates] = useState<Template[]>([]);
+
+  // Load custom templates from localStorage
+  React.useEffect(() => {
+    const savedTemplates = JSON.parse(localStorage.getItem('customTemplates') || '[]');
+    setCustomTemplates(savedTemplates);
+  }, []);
 
   const mockTemplates: Template[] = [
     {
@@ -272,9 +279,11 @@ const Templates: React.FC = () => {
     }
   ];
 
-  const categories = ['all', ...Array.from(new Set(mockTemplates.map(t => t.category)))];
+  // Combine mock templates with custom templates
+  const allTemplates = [...mockTemplates, ...customTemplates];
+  const categories = ['all', ...Array.from(new Set(allTemplates.map(t => t.category)))];
 
-  const filteredTemplates = mockTemplates.filter(template => {
+  const filteredTemplates = allTemplates.filter(template => {
     const matchesSearch =
       template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       template.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -328,8 +337,7 @@ const Templates: React.FC = () => {
   };
 
   const handleCreateTemplate = () => {
-    toast.success('Creating new template...');
-    // In a real app, this would navigate to the template creator
+    navigate('/templates/create');
   };
 
   return (
@@ -340,13 +348,22 @@ const Templates: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">Templates</h1>
           <p className="text-gray-600 mt-2">Choose from professional newsletter templates</p>
         </div>
-        <button
-          onClick={handleCreateTemplate}
-          className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-        >
-          <PlusIcon className="w-4 h-4" />
-          <span>Create Template</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={() => navigate('/templates/demo')}
+            className="flex items-center space-x-2 border border-blue-600 text-blue-600 px-4 py-2 rounded-md hover:bg-blue-50"
+          >
+            <EyeIcon className="w-4 h-4" />
+            <span>Dynamic Demo</span>
+          </button>
+          <button
+            onClick={handleCreateTemplate}
+            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          >
+            <PlusIcon className="w-4 h-4" />
+            <span>Create Template</span>
+          </button>
+        </div>
       </div>
 
       {/* Filters */}

@@ -55,12 +55,18 @@ const ModerationPanel: React.FC<ModerationPanelProps> = ({ isVisible, onClose })
   });
 
   // API hooks
-  const { data: reportsData, isLoading: reportsLoading, refetch: refetchReports } = useReports(reportFilters);
+  const { data: reportsData, isLoading: reportsLoading, error: reportsError, refetch: refetchReports } = useReports(reportFilters);
   const updateReportMutation = useUpdateReport();
   const moderationActionMutation = useModerationAction();
 
   // Get reports from API
   const reports = reportsData?.data?.reports || [];
+
+  // Debug logging
+  console.log('ModerationPanel - reportsData:', reportsData);
+  console.log('ModerationPanel - reports:', reports);
+  console.log('ModerationPanel - reportsError:', reportsError);
+  console.log('ModerationPanel - isLoading:', reportsLoading);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -318,10 +324,23 @@ const ModerationPanel: React.FC<ModerationPanelProps> = ({ isVisible, onClose })
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
                   <p className="text-gray-500 mt-2">Loading reports...</p>
                 </div>
+              ) : reportsError ? (
+                <div className="text-center py-8">
+                  <FlagIcon className="w-12 h-12 text-red-400 mx-auto mb-4" />
+                  <p className="text-red-600 font-medium">Error loading reports</p>
+                  <p className="text-gray-500 text-sm mt-2">{reportsError instanceof Error ? reportsError.message : 'Unknown error'}</p>
+                  <button
+                    onClick={() => refetchReports()}
+                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Retry
+                  </button>
+                </div>
               ) : reports.length === 0 ? (
                 <div className="text-center py-8">
                   <FlagIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-500">No reports found</p>
+                  <p className="text-gray-400 text-sm mt-2">Check console for debugging info</p>
                 </div>
               ) : (
                 reports.map((report) => (

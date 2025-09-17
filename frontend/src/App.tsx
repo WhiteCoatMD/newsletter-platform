@@ -9,8 +9,13 @@ import Newsletters from './pages/Newsletters';
 import Analytics from './pages/Analytics';
 import Subscribers from './pages/Subscribers';
 import Templates from './pages/Templates';
+import TemplateEditor from './components/Templates/TemplateEditor';
+import DynamicContentDemo from './components/Demo/DynamicContentDemo';
 import Community from './pages/Community';
 import Settings from './pages/Settings';
+import UserManual from './pages/UserManual';
+import ContentLibrary from './pages/ContentLibrary';
+import ArticleEditor from './components/Content/ArticleEditor';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
@@ -41,8 +46,15 @@ function App() {
               <Route path="analytics" element={<Analytics />} />
               <Route path="subscribers" element={<Subscribers />} />
               <Route path="templates" element={<Templates />} />
+              <Route path="templates/create" element={<TemplateEditor />} />
+              <Route path="templates/edit/:id" element={<TemplateEditor />} />
+              <Route path="templates/demo" element={<DynamicContentDemo />} />
               <Route path="community" element={<Community />} />
+              <Route path="content" element={<ContentLibrary />} />
+              <Route path="content/create" element={<ArticleEditor />} />
+              <Route path="content/edit/:id" element={<ArticleEditor />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="help" element={<UserManual />} />
             </Route>
           </Routes>
           <Toaster

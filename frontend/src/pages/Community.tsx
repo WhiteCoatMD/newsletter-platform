@@ -42,6 +42,11 @@ const Community: React.FC = () => {
     title: string;
   } | null>(null);
 
+  // Get current user from localStorage
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const isAdmin = user?.role === 'admin';
+  const isModerator = user?.role === 'moderator';
+
   const queryClient = useQueryClient();
 
   // API hooks
@@ -229,14 +234,16 @@ const Community: React.FC = () => {
           </div>
           <div className="flex items-center space-x-4">
             {/* Admin/Moderator Only */}
-            <button
-              onClick={() => setShowModerationPanel(true)}
-              className="flex items-center space-x-2 bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-3 rounded-2xl hover:from-orange-600 hover:to-red-600 shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
-              title="Moderation Panel (Admin Only)"
-            >
-              <ExclamationTriangleIcon className="w-5 h-5" />
-              <span>Moderate</span>
-            </button>
+            {(isAdmin || isModerator) && (
+              <button
+                onClick={() => setShowModerationPanel(true)}
+                className="flex items-center space-x-2 bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-3 rounded-2xl hover:from-orange-600 hover:to-red-600 shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
+                title="Moderation Panel (Admin Only)"
+              >
+                <ExclamationTriangleIcon className="w-5 h-5" />
+                <span>Moderate</span>
+              </button>
+            )}
             <button
               onClick={handleShowNewPostModal}
               className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-2xl hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 font-medium"

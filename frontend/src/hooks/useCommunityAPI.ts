@@ -313,19 +313,18 @@ export function useReports(filters = {}) {
             params.append(key, String(value));
           }
         });
-        return await apiCall(`/api/community/moderation-mongo?${params.toString()}`);
+        console.log('Fetching reports with URL:', `/api/community/moderation-mongo?${params.toString()}`);
+        const result = await apiCall(`/api/community/moderation-mongo?${params.toString()}`);
+        console.log('Reports API response:', result);
+        return result;
       } catch (error) {
-        console.warn('Reports API call failed, using empty array:', error);
-        return {
-          success: true,
-          data: {
-            reports: [],
-            pagination: { page: 1, limit: 20, total: 0, totalPages: 0 }
-          }
-        };
+        console.error('Reports API call failed:', error);
+        // Re-throw the error instead of silently returning empty data
+        throw error;
       }
     },
     staleTime: 1 * 60 * 1000, // 1 minute
+    retry: false, // Don't retry failed requests immediately
   });
 }
 
