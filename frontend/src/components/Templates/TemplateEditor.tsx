@@ -178,7 +178,7 @@ const TemplateEditor: React.FC = () => {
   const updateContentBox = (id: string, updates: Partial<ContentBox>) => {
     setTemplate(prev => ({
       ...prev,
-      contentBoxes: prev.contentBoxes.map(box =>
+      contentBoxes: (prev.contentBoxes || []).map(box =>
         box.id === id ? { ...box, ...updates } : box
       )
     }));
@@ -248,7 +248,7 @@ const TemplateEditor: React.FC = () => {
 <body>
   ${globalSettings.headerImage ? `<img src="${globalSettings.headerImage}" alt="Header" style="width: 100%; height: auto; margin-bottom: 20px;" />` : ''}
 
-  ${contentBoxes.map(box => `
+  ${(contentBoxes || []).map(box => `
     <div class="content-box" style="
       background-color: ${box.settings.backgroundColor || '#ffffff'};
       color: ${box.settings.textColor || '#000000'};
@@ -272,29 +272,48 @@ const TemplateEditor: React.FC = () => {
   };
 
   const saveTemplate = () => {
-    // In a real app, this would save to the backend
-    const templateData = {
-      ...template,
-      id: template.id || Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      isDefault: false,
-      isFavorite: false,
-      usageCount: 0
-    };
+    try {
+      // Validate template data
+      if (!template.name || !template.name.trim()) {
+        toast.error('Template name is required');
+        return;
+      }
 
-    // Save to localStorage for now
-    const existingTemplates = JSON.parse(localStorage.getItem('customTemplates') || '[]');
-    const updatedTemplates = template.id
-      ? existingTemplates.map((t: any) => t.id === template.id ? templateData : t)
-      : [...existingTemplates, templateData];
+      if (!template.contentBoxes || template.contentBoxes.length === 0) {
+        toast.error('Template must have at least one content box');
+        return;
+      }
 
-    localStorage.setItem('customTemplates', JSON.stringify(updatedTemplates));
+      // In a real app, this would save to the backend
+      const templateData = {
+        ...template,
+        id: template.id || Date.now().toString(),
+        createdAt: template.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isDefault: false,
+        isFavorite: false,
+        usageCount: 0,
+        contentBoxes: template.contentBoxes || []
+      };
 
-    toast.success(`Template "${template.name}" saved successfully!`);
-    navigate('/templates');
+      // Save to localStorage for now
+      const existingTemplates = JSON.parse(localStorage.getItem('customTemplates') || '[]');
+      const updatedTemplates = template.id
+        ? existingTemplates.map((t: any) => t.id === template.id ? templateData : t)
+        : [...existingTemplates, templateData];
+
+      localStorage.setItem('customTemplates', JSON.stringify(updatedTemplates));
+
+      toast.success(`Template "${template.name}" saved successfully!`);
+      // Add a small delay before navigation to ensure toast is shown
+      setTimeout(() => navigate('/templates'), 500);
+    } catch (error) {
+      console.error('Error saving template:', error);
+      toast.error('Failed to save template. Please try again.');
+    }
   };
 
-  const selectedBox = template.contentBoxes.find(box => box.id === selectedBoxId);
+  const selectedBox = (template.contentBoxes || []).find(box => box.id === selectedBoxId);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -408,7 +427,7 @@ const TemplateEditor: React.FC = () => {
               </div>
 
               <div className="p-4 space-y-3">
-                {template.contentBoxes.map((box, index) => (
+                {(template.contentBoxes || []).map((box, index) => (
                   <div
                     key={box.id}
                     className={`border rounded-lg p-4 cursor-pointer transition-colors ${
