@@ -38,8 +38,20 @@ const Templates: React.FC = () => {
 
   // Load custom templates from localStorage
   React.useEffect(() => {
-    const savedTemplates = JSON.parse(localStorage.getItem('customTemplates') || '[]');
-    setCustomTemplates(savedTemplates);
+    try {
+      const savedTemplates = JSON.parse(localStorage.getItem('customTemplates') || '[]');
+      console.log('Loaded custom templates:', savedTemplates);
+      // Ensure all templates have required properties
+      const validTemplates = (savedTemplates || []).map((template: any) => ({
+        ...template,
+        tags: template.tags || [],
+        contentBoxes: template.contentBoxes || []
+      }));
+      setCustomTemplates(validTemplates);
+    } catch (error) {
+      console.error('Error loading custom templates:', error);
+      setCustomTemplates([]);
+    }
   }, []);
 
   const mockTemplates: Template[] = [
@@ -280,14 +292,14 @@ const Templates: React.FC = () => {
   ];
 
   // Combine mock templates with custom templates
-  const allTemplates = [...mockTemplates, ...customTemplates];
+  const allTemplates = [...mockTemplates, ...(customTemplates || [])];
   const categories = ['all', ...Array.from(new Set(allTemplates.map(t => t.category)))];
 
   const filteredTemplates = allTemplates.filter(template => {
     const matchesSearch =
       template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       template.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      template.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+      (template.tags || []).some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesCategory = categoryFilter === 'all' || template.category === categoryFilter;
     const matchesFavorites = !showFavoritesOnly || template.isFavorite;
@@ -450,9 +462,9 @@ const Templates: React.FC = () => {
               </p>
 
               {/* Tags */}
-              {template.tags.length > 0 && (
+              {(template.tags && template.tags.length > 0) && (
                 <div className="flex flex-wrap gap-1 mb-4">
-                  {template.tags.slice(0, 3).map((tag) => (
+                  {(template.tags || []).slice(0, 3).map((tag) => (
                     <span
                       key={tag}
                       className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
