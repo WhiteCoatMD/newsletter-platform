@@ -14,6 +14,7 @@ const PostEditor: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [newsletterId, setNewsletterId] = useState<string | null>(null);
+  const [imagePrompt, setImagePrompt] = useState('');
 
   // Load template data if available
   React.useEffect(() => {
@@ -73,14 +74,15 @@ const PostEditor: React.FC = () => {
   };
 
   const handleRegenerateImage = async () => {
-    if (!title.trim()) {
-      toast.error('Please enter a newsletter title first');
+    const promptToUse = imagePrompt.trim() || title.trim();
+    if (!promptToUse) {
+      toast.error('Please enter a newsletter title or image prompt first');
       return;
     }
 
     setIsSaving(true);
     try {
-      console.log('Regenerating image with title:', title);
+      console.log('Generating image with prompt:', promptToUse);
 
       const response = await fetch(`${API_BASE_URL}/api/ai/generate-image`, {
         method: 'POST',
@@ -89,7 +91,7 @@ const PostEditor: React.FC = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({
-          prompt: title,
+          prompt: promptToUse,
           size: '1792x1024',
           style: 'vivid'
         })
@@ -334,16 +336,50 @@ const PostEditor: React.FC = () => {
                     </button>
                   </div>
                 </div>
+                {/* Image Prompt Input */}
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Image Prompt (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={imagePrompt}
+                    onChange={(e) => setImagePrompt(e.target.value)}
+                    placeholder="Describe the image you want to generate..."
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Leave blank to use the newsletter title as the prompt
+                  </p>
+                </div>
               </div>
             ) : (
               <div className="px-6 pt-4">
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                   <PhotoIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-500 mb-4">Add a hero image to your newsletter</p>
+
+                  {/* Image Prompt Input */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Image Prompt (optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={imagePrompt}
+                      onChange={(e) => setImagePrompt(e.target.value)}
+                      placeholder="Describe the image you want to generate..."
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Leave blank to use the newsletter title as the prompt
+                    </p>
+                  </div>
+
                   <div className="flex justify-center space-x-4">
                     <button
                       onClick={handleRegenerateImage}
-                      disabled={isSaving || !title.trim()}
+                      disabled={isSaving || (!title.trim() && !imagePrompt.trim())}
                       className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
                     >
                       <ArrowPathIcon className="w-4 h-4" />
@@ -360,8 +396,8 @@ const PostEditor: React.FC = () => {
                       />
                     </label>
                   </div>
-                  {!title.trim() && (
-                    <p className="text-xs text-gray-400 mt-2">Enter a title to generate an AI image</p>
+                  {(!title.trim() && !imagePrompt.trim()) && (
+                    <p className="text-xs text-gray-400 mt-2">Enter a title or image prompt to generate an AI image</p>
                   )}
                 </div>
               </div>
