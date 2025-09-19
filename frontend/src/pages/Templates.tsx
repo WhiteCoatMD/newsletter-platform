@@ -26,6 +26,13 @@ interface Template {
   usageCount: number;
   createdAt: string;
   tags: string[];
+  contentBoxes?: Array<{
+    id: string;
+    type: string;
+    title: string;
+    content: string;
+    settings: any;
+  }>;
 }
 
 const Templates: React.FC = () => {
@@ -308,10 +315,17 @@ const Templates: React.FC = () => {
   });
 
   const handleUseTemplate = (template: Template) => {
+    let templateContent = template.content;
+
+    // If template has contentBoxes (from TemplateEditor), convert them to HTML
+    if (template.contentBoxes && template.contentBoxes.length > 0) {
+      templateContent = template.contentBoxes.map(box => box.content).join('\n\n');
+    }
+
     // Store template data in localStorage to pass to editor
     localStorage.setItem('selectedTemplate', JSON.stringify({
       name: template.name,
-      content: template.content,
+      content: templateContent,
       heroImage: template.thumbnail
     }));
 
@@ -563,7 +577,11 @@ const Templates: React.FC = () => {
             {/* Modal Content */}
             <div className="p-6 overflow-y-auto max-h-[70vh]">
               <div className="prose max-w-none">
-                <div dangerouslySetInnerHTML={{ __html: previewTemplate.content }} />
+                <div dangerouslySetInnerHTML={{
+                  __html: previewTemplate.contentBoxes && previewTemplate.contentBoxes.length > 0
+                    ? previewTemplate.contentBoxes.map(box => box.content).join('\n\n')
+                    : previewTemplate.content
+                }} />
               </div>
             </div>
 
